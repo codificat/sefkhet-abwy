@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # sesheta-actions
-# Copyright(C) 2020 Christoph Görn
+# Copyright(C) 2020-2022 The Authors of Project Thoth
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,9 +24,6 @@ import logging
 import random
 import aiohttp
 
-from chatterbot import ChatBot
-from chatterbot.trainers import ChatterBotCorpusTrainer
-
 from thoth.common import init_logging
 
 from aicoe.sesheta import __version__
@@ -41,18 +38,16 @@ _LOGGER = logging.getLogger("aicoe.sesheta.chat")
 _THOTH_INHABITANTS = [
     "codificat",
     "fridex",
+    "Gkrumbach07",
     "goern",
+    "Gregory-Pereira",
     "harshad16",
     "KPostOffice",
     "mayaCostantini",
-    "pacospace",
-    "sub-mod",
+    "meile18",
     "xtuchyna",
 ]
 
-CHATBOT = ChatBot("Sesheta", read_only=True)
-_TRAINER = ChatterBotCorpusTrainer(CHATBOT)
-_TRAINER.train("chatterbot.corpus.english")
 _GITHUB_TOKEN = os.environ["GITHUB_ACCESS_TOKEN"]
 _RELEASE_COMMANDS = ["create new minor release", "create new major release", "create new patch release"]
 
@@ -76,7 +71,7 @@ async def make_release_issue(request: dict):
     return f"Creating the issue failed. \n Log - {resp_text}"
 
 
-async def get_intent(text: str,) -> (str, float, dict):
+async def get_intent(text: str) -> (str, float, dict):
     """Get the Intent of the provided text, and assign it a score."""
     repo_name = None
     tag = None
@@ -161,6 +156,3 @@ async def process_user_text(thread_id: str, text: str) -> str:
 
     if intent[0] == "grti":
         return f"⭐ In this Universe, based on relative position of planets  and all the galaxies I picked {hangouts_userid(random.choice(_THOTH_INHABITANTS))} ⭐"
-
-    chatterbox_response = CHATBOT.get_response(text[len("@sesheta ") :])
-    return str(chatterbox_response)
