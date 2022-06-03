@@ -48,6 +48,27 @@ _THOTH_INHABITANTS = [
     "xtuchyna",
 ]
 
+_THOTH_STORAGE_REPOS = [
+    "adviser",
+    "cve-update-job",
+    "graph-backup-job",
+    "graph-metrics-exporter",
+    "graph-refresh-job",
+    "graph-sync-job",
+    "init-job",
+    "investigator",
+    "management-api",
+    "metrics-exporter",
+    "package-releases-job",
+    "package-update-job",
+    "prescriptions-refresh-job",
+    "pulp-pypi-sync-job",
+    "revsolver",
+    "slo-reporter",
+    "user-api",
+    "workflow-helpers",
+]
+
 _GITHUB_TOKEN = os.environ["GITHUB_ACCESS_TOKEN"]
 _RELEASE_COMMANDS = ["create new minor release", "create new major release", "create new patch release"]
 
@@ -71,7 +92,23 @@ async def make_release_issue(request: dict):
     return f"Creating the issue failed. \n Log - {resp_text}"
 
 
-async def get_intent(text: str) -> (str, float, dict):
+async def make_kebechet_update_issue(repo_name: str) -> str:
+    """Create a GitHub issue to request a Kebechet update."""
+    web_url = f"https://api.github.com/repos/thoth-station/{repo_name}/issues"
+    json_payload = {"title": "Kebechet update", "assignees": ["sesheta"], "labels": ["bot"]}
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            web_url, headers={f"Authorization": f"token {_GITHUB_TOKEN}"}, json=json_payload,
+        ) as resp:
+            status = resp.status
+            resp_text = await resp.json()
+            _LOGGER.debug(status, resp_text)
+            if resp.status == 201:
+                issue_link = resp_text.get("html_url")
+                return f"Kebechet update issue is successfully created for {repo_name} at - <{issue_link}|Link>"
+    return f"Creating the issue failed. \n Log - {resp_text}"
+
+
     """Get the Intent of the provided text, and assign it a score."""
     repo_name = None
     tag = None
@@ -102,6 +139,9 @@ async def get_intent(text: str) -> (str, float, dict):
 
     if text.lower().startswith(("grti", "get random thoth inhabitant")):
         return ("grti", 1.0, {})
+
+    if text.lower().startswith("schema updated"):
+        return ("tsu", 1.0, {})
 
     return (None, 0.0, {})
 
@@ -155,4 +195,10 @@ async def process_user_text(thread_id: str, text: str) -> str:
         return " 🔗 ".join(inhabitants)
 
     if intent[0] == "grti":
-        return f"⭐ In this Universe, based on relative position of planets  and all the galaxies I picked {hangouts_userid(random.choice(_THOTH_INHABITANTS))} ⭐"
+        return f"⭐ In this Universe, based on relative position of planets and all the galaxies I picked {hangouts_userid(random.choice(_THOTH_INHABITANTS))} ⭐"
+
+    if intent[0] == "tsu":
+        text = ""
+        for repo_name in _THOTH_STORAGE_REPOS:
+            text += f"{make_kebechet_update_issue(repo_name)}\n"
+        return text
