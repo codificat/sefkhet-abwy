@@ -97,7 +97,6 @@ GITHUB_REALNAME_MAP = {
     "goern": "Christoph Goern",
     "gregory-pereira": "Gregory Pereira",
     "harshad16": "Harshad Reddy Nalla",
-    "harshad16": "Harshad Reddy Nalla",
     "hemajv": "Hema Veeradhi",
     "humairak": "Humair Khan",
     "kpostoffice": "Kevin Postlethwait",
